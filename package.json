@@ -1,0 +1,20 @@
+{
+  "name": "execute-middleware",
+  "version": "1.0.0",
+  "description": "Execute arbitrarily complex middleware in the Express format.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "middleware",
+    "run",
+    "execute",
+    "chain",
+    "express",
+    "node",
+    "mw"
+  ],
+  "author": "Tomas Savigliano",
+  "license": "ISC"
+}
