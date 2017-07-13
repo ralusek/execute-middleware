@@ -34,52 +34,27 @@ arguments.
 `$ npm install execute-middleware`
 
 ```javascript
-const mw = require('execute-middleware');
-```
+const executeMW = require('execute-middleware');
 
-Now say we had some middleware like this:
-
-```javascript
-const MIDDLEWARE = [
+// Some middleware
+const SOME_MIDDLEWARE = [
   (req, res, next) => {
-    console.log('Middleware A');
-    next();
+    console.log('hi.');
+    next()
   },
-  // Error handling middleware which should not be invoked.
-  (err, req, res, next) => {
-    console.log('Middleware B: I should not have been invoked.');
-    next();
-  },
-  // Some nested middleware
   [
     (req, res, next) => {
-      console.log('Middleware B1');
-      next();
+      console.log('hey');
     },
-    (req, res, next) => {
-      console.log('Middleware B2');
-      next();
+    (err, req, res, next) => {
+      console.log('I will not be called, because im not an error.');
     }
-  ],
-  (req, res, next) => {
-    console.log('Middleware C');
-    next();
-  }
+  ]
 ];
-```
 
-We could execute it like this:
-```javascript
-  // These can be anything, passed along as req/res objects.
-  const req = {};
-  const res = {};
+// Execute MW serially
+executeMW.serial(SOME_MIDDLEWARE);
 
-  // Can invoke with a next
-  mw(MIDDLEWARE)(req, res, (err) => {
-    console.log('Middleware executed, if there was an error its here:', err);
-  });
-
-  // Or can invoke as a promise
-  mw(MIDDLEWARE)(req, res)
-  .then(() => console.log('Middleware executed.'));
+// Execute MW concurrently
+executeMW.concurrent(SOME_MIDDLEWARE);
 ```
