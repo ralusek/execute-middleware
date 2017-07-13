@@ -54,14 +54,13 @@ function serial(middlewares, err) {
  *
  */
 function concurrent (middlewares) {
-  if (!middlewares) throw new Error('concurrent-middleware cannot execute middlewares, none provided.');
-  if (!Array.isArray(middlewares)) throw new Error('concurrent-middleware expects first argument to be an array of middleware.');
-
-  const total = middlewares.length;
-  let completed = 0;
-  let errored = false;
-
   return (req, res, next) => {
+    if (!middlewares) throw new Error('concurrent-middleware cannot execute middlewares, none provided.');
+    if (!Array.isArray(middlewares)) throw new Error('concurrent-middleware expects first argument to be an array of middleware.');
+
+    const total = middlewares.length;
+    let completed = 0;
+    let errored = false;
     middlewares.forEach(middleware => {
       if (Array.isArray(middleware)) middleware = serial(middleware);
       middleware(req, res, (err) => {
