@@ -1,6 +1,6 @@
 {
   "name": "execute-middleware",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Execute arbitrarily complex middleware in the Express format.",
   "main": "index.js",
   "scripts": {
