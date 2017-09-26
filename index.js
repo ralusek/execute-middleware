@@ -11,15 +11,21 @@ module.exports.serial = serial;
  */
 module.exports.concurrent = concurrent;
 
+/**
+ *
+ */
+module.exports.any = any;
+
+
 
 /**
  *
  */
 function serial(middlewares, err) {
-  return (req, res, next) => {
-    if (!Array.isArray(middlewares)) throw new Error('concurrent-middleware serial expects first argument to be an array of middleware.');
-    if (!middlewares.length) return next(err);
+  if (!Array.isArray(middlewares)) throw new Error('concurrent-middleware serial expects first argument to be an array of middleware.');
+  if (!middlewares.length) return next(err);
 
+  return (req, res, next) => {
     let current = 0;
 
     execute(middlewares[current], err);
@@ -53,25 +59,44 @@ function serial(middlewares, err) {
 /**
  *
  */
-function concurrent (middlewares) {
-  return (req, res, next) => {
-    if (!middlewares) throw new Error('concurrent-middleware cannot execute middlewares, none provided.');
-    if (!Array.isArray(middlewares)) throw new Error('concurrent-middleware expects first argument to be an array of middleware.');
+function concurrent(middlewares) {
+  if (!middlewares) throw new Error('concurrent-middleware cannot execute middlewares, none provided.');
+  if (!Array.isArray(middlewares)) throw new Error('concurrent-middleware expects first argument to be an array of middleware.');
+  const total = middlewares.length;
 
-    const total = middlewares.length;
+  return (req, res, next) => {
     let completed = 0;
-    let errored = false;
+    let error;
     middlewares.forEach(middleware => {
       if (Array.isArray(middleware)) middleware = serial(middleware);
       middleware(req, res, (err) => {
-        completed++;
         // Check if an error has already been handled.
-        if (errored) return;
-        if (err) {
-          errored = true;
-          return next(err);
-        }
-        if (completed === total) next();
+        if (error) return;
+        if (err) return next(error = err);
+        if (++completed === total) next();
+      });
+    });
+  };
+}
+
+
+/**
+ *
+ */
+function any(middlewares) {
+  if (!middlewares) throw new Error('concurrent-middleware cannot execute middlewares, none provided.');
+  if (!Array.isArray(middlewares)) throw new Error('concurrent-middleware expects first argument to be an array of middleware.');
+  const total = middlewares.length;
+
+  return (req, res, next) => {
+    const errors = [];
+    let completed = 0;
+
+    middlewares.forEach(middleware => {
+      if (Array.isArray(middleware)) middleware = serial(middleware);
+      middleware(req, res, (err) => {
+        if (err) errors.push(err);
+        if (++completed === total) ((errors.length === total) ? next(errors) : next());
       });
     });
   };
